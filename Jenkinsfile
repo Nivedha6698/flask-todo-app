@@ -40,7 +40,7 @@ pipeline {
 
         stage('Archive Artifacts') {
             steps {
-                archiveArtifacts artifacts: '**/*.log', fingerprint: true
+                archiveArtifacts artifacts: '**/*.py', fingerprint: true
             }
         }
     }
