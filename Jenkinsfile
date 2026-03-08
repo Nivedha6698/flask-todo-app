@@ -15,7 +15,7 @@ pipeline {
 
         stage('Create Virtual Environment') {
             steps {
-                sh 'python -m venv venv'
+                sh 'python3 -m venv venv'
             }
         }
 
