@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple TODO App</title>
+</head>
+<body>
+
+<h2>TODO List</h2>
+
+<form action="/add" method="POST">
+    <input type="text" name="task" placeholder="Enter new task" required>
+    <button type="submit">Add Task</button>
+</form>
+
+<ul>
+{% for task in tasks %}
+<li>
+    {{ task }}
+    <a href="/delete/{{ loop.index0 }}">Delete</a>
+
+    <form action="/update/{{ loop.index0 }}" method="POST" style="display:inline;">
+        <input type="text" name="task" placeholder="Update task">
+        <button type="submit">Update</button>
+    </form>
+</li>
+{% endfor %}
+</ul>
+
+</body>
+</html>
