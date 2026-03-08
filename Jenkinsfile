@@ -28,12 +28,11 @@ pipeline {
             }
         }
 
-        stage('Run Application Test') {
+        stage('Validate Python Code') {
             steps {
                 sh '''
                 . venv/bin/activate
-                python app.py &
-                sleep 5
+                python -m py_compile app.py
                 '''
             }
         }
@@ -48,15 +47,33 @@ pipeline {
     post {
 
         success {
-            mail to: 'nivedha6698@gmail.com',
-            subject: "Jenkins Build Success",
-            body: "The Flask Todo App build completed successfully."
+            emailext (
+                to: 'nivedha6698@gmail.com',
+                subject: "Build Success: ${env.JOB_NAME}",
+                body: """
+                Jenkins Build Completed Successfully.
+
+                Job Name: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+                Build URL: ${env.BUILD_URL}
+                """
+            )
         }
 
         failure {
-            mail to: 'nivedha6698@gmail.com',
-            subject: "Jenkins Build Failed",
-            body: "The Flask Todo App build failed. Please check Jenkins logs."
+            emailext (
+                to: 'nivedha6698@gmail.com',
+                subject: "Build Failed: ${env.JOB_NAME}",
+                body: """
+                Jenkins Build Failed.
+
+                Job Name: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+                Build URL: ${env.BUILD_URL}
+
+                Please check Jenkins console output.
+                """
+            )
         }
     }
 }
