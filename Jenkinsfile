@@ -8,6 +8,12 @@ pipeline {
     }
 
     stages {
+        
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Nivedha6698/flask-todo-app.git'
+            }
+        }
 
         stage('Build & Test') {
             steps{
@@ -47,6 +53,8 @@ pipeline {
                 bat "docker pull %DOCKERHUB_REPO%:latest"
             }
         }
+
+
 
         stage('Deploy Docker Container'){
             steps{
