@@ -1,13 +1,12 @@
 pipeline {
     agent any
-    
+
     environment {
         IMAGE_NAME = 'nive-todo-app:latest'
         DOCKERHUB_CREDENTIALS = 'dockerhubtoken'
         DOCKERHUB_REPO = 'nivedhajd/nive-todo-app'
-        SONAR_TOKEN=credentials('sonartoken1')
-
-  
+        SONAR_TOKEN = credentials('sonartoken1')
+        SCANNER_HOME = tool 'sonarscanner'
     }
 
     stages {
@@ -19,15 +18,17 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonar') { // 'sonarserver' is the name you configured
-                    sh '''
-                    $SONAR_SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectKey=nive-todo-app \ 
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=http://localhost:9000 \
-                    -Dsonar.login=$SONAR_TOKEN
-                    '''
+                withSonarQubeEnv('sonar') {
+                    sh """
+                    $SCANNER_HOME/bin/sonar-scanner
+                      -Dsonar.projectKey=nive-todo-app
+                      -Dsonar.sources=.
+                      -Dsonar.host.url=http://localhost:9000
+                      -Dsonar.login=$SONAR_TOKEN
+                    """
                 }
+            }
+        }
 
         stage('Image Build') {
             steps {
@@ -42,11 +43,11 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh '''
+                    sh """
                     docker login -u $DOCKER_USER -p $DOCKER_PASS
                     docker tag $IMAGE_NAME $DOCKERHUB_REPO:latest
                     docker push $DOCKERHUB_REPO:latest
-                    '''
+                    """
                 }
             }
         }
