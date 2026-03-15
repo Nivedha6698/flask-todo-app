@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('Build & Test') {
             steps{
                 bat '''
@@ -47,13 +48,21 @@ pipeline {
             }
         }
 
+        stage('Stop Old Container'){
+            steps{
+                bat 'docker stop nive-todo-container'
+            }
+        }
+
+        stage('Remove Old Container'){
+            steps{
+                bat 'docker rm nive-todo-container'
+            }
+        }
+
         stage('Deploy Docker Container'){
             steps{
-                bat '''
-                docker stop nive-todo-container || exit 0
-                docker rm nive-todo-container || exit 0
-                docker run -d -p 5000:5000 --name nive-todo-container %DOCKERHUB_REPO%:latest
-                '''
+                bat 'docker run -d -p 5000:5000 --name nive-todo-container %DOCKERHUB_REPO%:latest'
             }
         }
     }
