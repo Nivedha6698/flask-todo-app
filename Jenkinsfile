@@ -53,9 +53,16 @@ pipeline {
                 bat "docker pull %DOCKERHUB_REPO%:latest"
             }
         }
-
-
-
+        stage('Stop Old Container') {
+            steps {
+                bat 'docker stop nive-todo-container || exit 0'
+            }
+        }
+        stage('Remove Old Container') {
+            steps {
+                bat 'docker rm nive-todo-container || exit 0'
+            }
+        }
         stage('Deploy Docker Container'){
             steps{
                 bat 'docker run -d -p 5000:5000 --name nive-todo-container %DOCKERHUB_REPO%:latest'
