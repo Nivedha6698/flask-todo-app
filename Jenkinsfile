@@ -8,13 +8,6 @@ pipeline {
     }
 
     stages {
-
-        stage('Code Checkout') {
-            steps {
-                git branch:'main', url:"https://github.com/YOUR_GITHUB_USERNAME/flask-devops-app.git"
-            }
-        }
-
         stage('Build & Test') {
             steps{
                 bat '''
