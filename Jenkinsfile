@@ -5,6 +5,13 @@ pipeline {
         IMAGE_NAME ='nive-todo-app:latest'
         DOCKERHUB_CREDENTIALS = 'dockerhubtoken'
         DOCKERHUB_REPO ='nivedhajd/nive-todo-app'
+
+        // SonarQube environment
+        SONAR_HOST_URL = 'http://13.239.63.86:9000'
+        SONAR_LOGIN = 'admin'  // Replace with your SonarQube token if needed
+        SONAR_PROJECT_KEY = 'nive-todo-app'
+        SONAR_PROJECT_NAME = 'Nive Todo App'
+		SCANNER_HOME = tool 'sonarscanner'
     }
 
     stages {
@@ -15,19 +22,24 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
-            steps{
-                bat '''
-                python --version
-                pip install -r requirements.txt
-                python -m py_compile app.py
+
+        stage('SonarQube Analysis') {
+            steps {
+                sh '''
+                # Ensure sonar-scanner is installed and in PATH
+                sonar-scanner \
+                  -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                  -Dsonar.projectName="$SONAR_PROJECT_NAME" \
+                  -Dsonar.sources=. \
+                  -Dsonar.host.url=$SONAR_HOST_URL \
+                  -Dsonar.login=$SONAR_LOGIN
                 '''
             }
         }
 
         stage('Image Build'){
             steps{
-                bat 'docker build -t %IMAGE_NAME% .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
@@ -38,34 +50,36 @@ pipeline {
                     usernameVariable:'DOCKER_USER',
                     passwordVariable:'DOCKER_PASS'
                 )]) {
-
-                    bat """
-                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                    docker tag %IMAGE_NAME% %DOCKERHUB_REPO%:latest
-                    docker push %DOCKERHUB_REPO%:latest
-                    """
+                    sh '''
+                    docker login -u $DOCKER_USER -p $DOCKER_PASS
+                    docker tag $IMAGE_NAME $DOCKERHUB_REPO:latest
+                    docker push $DOCKERHUB_REPO:latest
+                    '''
                 }
             }
         }
 
         stage('Pull Docker Image'){
             steps{
-                bat "docker pull %DOCKERHUB_REPO%:latest"
+                sh "docker pull $DOCKERHUB_REPO:latest"
             }
         }
+
         stage('Stop Old Container') {
             steps {
-                bat 'docker stop nive-todo-container || exit 0'
+                sh 'docker stop nive-todo-container || true'
             }
         }
+
         stage('Remove Old Container') {
             steps {
-                bat 'docker rm nive-todo-container || exit 0'
+                sh 'docker rm nive-todo-container || true'
             }
         }
+
         stage('Deploy Docker Container'){
             steps{
-                bat 'docker run -d -p 5000:5000 --name nive-todo-container %DOCKERHUB_REPO%:latest'
+                sh 'docker run -d -p 5000:5000 --name nive-todo-container $DOCKERHUB_REPO:latest'
             }
         }
     }
