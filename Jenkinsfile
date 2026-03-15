@@ -5,12 +5,9 @@ pipeline {
         IMAGE_NAME = 'nive-todo-app:latest'
         DOCKERHUB_CREDENTIALS = 'dockerhubtoken'
         DOCKERHUB_REPO = 'nivedhajd/nive-todo-app'
+        SONAR_TOKEN=credentials('sonartoken1')
 
-        // Uncomment and use if needed
-        // SONAR_HOST_URL = 'http://13.239.63.86:9000'
-        // SONAR_PROJECT_KEY = 'nive-todo-app'
-        // SONAR_PROJECT_NAME = 'Nive Todo App'
-        // SCANNER_HOME = tool 'sonarscanner'
+  
     }
 
     stages {
@@ -21,21 +18,16 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            environment {
-                SONAR_AUTH_TOKEN = credentials('sonartoken1')  // Token credential ID in Jenkins
-            }
             steps {
-                withSonarQubeEnv('sonar') {
+                withSonarQubeEnv('sonar') { // 'sonarserver' is the name you configured
                     sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=nive-todo-app \
-                    -Dsonar.projectName="Nive Todo App" \
+                    $SONAR_SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectKey=nive-todo-app \ 
                     -Dsonar.sources=. \
-                    -Dsonar.login=$SONAR_AUTH_TOKEN
+                    -Dsonar.host.url=http://localhost:9000 \
+                    -Dsonar.login=$SONAR_TOKEN
                     '''
                 }
-            }
-        }
 
         stage('Image Build') {
             steps {
