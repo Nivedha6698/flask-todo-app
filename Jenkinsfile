@@ -1,88 +1,67 @@
 pipeline {
     agent any
-
-    environment {
-        APP_ENV = "production"
+    
+    environment{
+        IMAGE_NAME ='nive-todo-app:latest'
+        DOCKERHUB_CREDENTIALS = 'dockerhubtoken'
+        DOCKERHUB_REPO ='nivedhajd/nive-todo-app'
     }
 
     stages {
 
-        stage('Clone Repository') {
+        stage('Code Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Nivedha6698/flask-todo-app.git'
+                git branch:'main', url:"https://github.com/YOUR_GITHUB_USERNAME/flask-devops-app.git"
             }
         }
 
-        stage('Create Virtual Environment') {
-            steps {
-                sh 'python3 -m venv venv'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                . venv/bin/activate
+        stage('Build & Test') {
+            steps{
+                bat '''
+                python --version
                 pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Validate Python Code') {
-            steps {
-                sh '''
-                . venv/bin/activate
                 python -m py_compile app.py
                 '''
             }
         }
 
-        stage('Archive Artifacts') {
-            steps {
-                archiveArtifacts artifacts: '**/*.py', fingerprint: true
+        stage('Image Build'){
+            steps{
+                bat 'docker build -t %IMAGE_NAME% .'
             }
         }
-        
-        stage('Run Application') {
-            steps {
-                sh '''
-                . venv/bin/activate
-                gunicorn -w 4 -b 0.0.0.0:5000 app:app
+
+        stage('Docker Login and Push'){
+            steps{
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhubtoken',
+                    usernameVariable:'DOCKER_USER',
+                    passwordVariable:'DOCKER_PASS'
+                )]) {
+
+                    bat """
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    docker tag %IMAGE_NAME% %DOCKERHUB_REPO%:latest
+                    docker push %DOCKERHUB_REPO%:latest
+                    """
+                }
+            }
+        }
+
+        stage('Pull Docker Image'){
+            steps{
+                bat "docker pull %DOCKERHUB_REPO%:latest"
+            }
+        }
+
+        stage('Deploy Docker Container'){
+            steps{
+                bat '''
+                docker stop nive-todo-container || exit 0
+                docker rm nive-todo-container || exit 0
+                docker run -d -p 5000:5000 --name nive-todo-container %DOCKERHUB_REPO%:latest
                 '''
             }
-        }
-    }
-
-    post {
-
-        success {
-            emailext (
-                to: 'nivedha6698@gmail.com',
-                subject: "Build Success: ${env.JOB_NAME}",
-                body: """
-                Jenkins Build Completed Successfully.
-
-                Job Name: ${env.JOB_NAME}
-                Build Number: ${env.BUILD_NUMBER}
-                Build URL: ${env.BUILD_URL}
-                """
-            )
-        }
-
-        failure {
-            emailext (
-                to: 'nivedha6698@gmail.com',
-                subject: "Build Failed: ${env.JOB_NAME}",
-                body: """
-                Jenkins Build Failed.
-
-                Job Name: ${env.JOB_NAME}
-                Build Number: ${env.BUILD_NUMBER}
-                Build URL: ${env.BUILD_URL}
-
-                Please check Jenkins console output.
-                """
-            )
         }
     }
 }
