@@ -9,13 +9,15 @@ pipeline {
         SCANNER_HOME = tool 'sonarscanner'
     }
 
+    stages {
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
                     sh """
-                    $SCANNER_HOME/bin/sonar-scanner
-                      -Dsonar.projectKey=nive-todo-app
-                      -Dsonar.sources=.
+                    $SCANNER_HOME/bin/sonar-scanner \
+                      -Dsonar.projectKey=nive-todo-app \
+                      -Dsonar.sources=. \
                       -Dsonar.login=$SONAR_TOKEN
                     """
                 }
@@ -67,5 +69,6 @@ pipeline {
                 sh 'docker run -d -p 5000:5000 --name nive-todo-container $DOCKERHUB_REPO:latest'
             }
         }
+
     }
 }
