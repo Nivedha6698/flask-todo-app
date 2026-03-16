@@ -9,13 +9,6 @@ pipeline {
         SCANNER_HOME = tool 'sonarscanner'
     }
 
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Nivedha6698/flask-todo-app.git'
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
@@ -23,7 +16,6 @@ pipeline {
                     $SCANNER_HOME/bin/sonar-scanner
                       -Dsonar.projectKey=nive-todo-app
                       -Dsonar.sources=.
-                      -Dsonar.host.url=http://13.239.63.86:9000
                       -Dsonar.login=$SONAR_TOKEN
                     """
                 }
