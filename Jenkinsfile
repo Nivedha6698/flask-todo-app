@@ -23,7 +23,7 @@ pipeline {
                     $SCANNER_HOME/bin/sonar-scanner
                       -Dsonar.projectKey=nive-todo-app
                       -Dsonar.sources=.
-                      -Dsonar.host.url=http://localhost:9000
+                      -Dsonar.host.url=http://13.239.63.86:9000
                       -Dsonar.login=$SONAR_TOKEN
                     """
                 }
