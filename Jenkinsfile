@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent 'master'
 
     environment {
         IMAGE_NAME = 'nive-todo-app:latest'
