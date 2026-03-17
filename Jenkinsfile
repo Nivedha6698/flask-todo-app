@@ -5,7 +5,6 @@ pipeline {
         IMAGE_NAME = 'nive-todo-app:latest'
         DOCKERHUB_CREDENTIALS = 'dockerhubtoken'
         DOCKERHUB_REPO = 'nivedhajd/nive-todo-app'
-        SONAR_TOKEN = credentials('sonartoken1')
         SCANNER_HOME = tool 'sonarscanner'
     }
 
@@ -15,10 +14,12 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar') {
                     sh """
-                    $SCANNER_HOME/bin/sonar-scanner \
+                       $SCANNER_HOME/bin/sonar-scanner \
                       -Dsonar.projectKey=nive-todo-app \
+                      -Dsonar.projectName=NiveTodoApp \
                       -Dsonar.sources=. \
-                      -Dsonar.login=$SONAR_TOKEN
+                      -Dsonar.host.url=$SONAR_HOST_URL
+                      -Dsonar.login=$SONAR_AUTH_TOKEN
                     """
                 }
             }
