@@ -65,7 +65,7 @@ pipeline {
         }
 
         stage('Deploy Docker Container') {
-            steps {
+            steps{
                 sh 'docker run -d -p 5000:5000 --name nive-todo-container $DOCKERHUB_REPO:latest'
             }
         }
